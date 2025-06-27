@@ -25,11 +25,18 @@
   <!-- MODAL COMO JOGAR (único elemento para “Sobre”) -->
   <div id="modal-como-jogar" class="modal oculto">
     <div class="modal-conteudo">
-      <h2>Como Jogar</h2>
       <p>
         Você é um técnico que precisa consertar robôs. Cada robô tem uma pilha de componentes defeituosos.
-        Digite corretamente o código de cada componente para removê-lo da pilha. Quando a pilha acabar, o robô está consertado!
-      </p>
+         Quando a pilha acabar, o robô está consertado!</p>
+      <h2>Como Jogar</h2>
+      <p>1. Clique em <strong>Jogar</strong> para começar.</p>
+      <p>2. Clique em um robô na lista à direita para levalo atá a sua estação de trabalho.</p>
+      <p>3. Na sua estação aparecerá um código, digite o código exibido no componente:</p>
+      <pre><code>Exemplo: C123</code></pre>
+      <p>4. Pressione <strong>Enter</strong> para ir para o próximo componente ou liberar a sua estação.</p>
+      <p>5. Quando todos os componentes forem substituídos, o robô sai da fila.</p>
+      <p>6. Se ultrapassar o limite de robôs na oficina, o jogo termina.</p>
+      
       <!-- Aqui usamos onClick direto para evitar qualquer problema de carregamento -->
       <button id="btn-fechar-modal" onclick="closeComoJogarModal()">Fechar</button>
     </div>

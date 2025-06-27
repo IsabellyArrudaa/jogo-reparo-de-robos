@@ -4,7 +4,46 @@ let generateInterval;    // Intervalo de chegada de robôs
 let isRunning = false;   // Estado do jogo
 let startTime;           // Hora que o jogo começou
 let tempoDecorrido = 0;  // Tempo total
-const MAX_ROBOS = 5;     // Limite máximo de robôs
+const MAX_ROBOS = 15;     // Limite máximo de robôs
+let robosConsertados = 0;
+let componentesConsertados = 0;
+
+// Gera um robô aleatório com pilha de componentes
+let nextRoboId = 1;
+function criarRoboAleatorio() {
+  const modelos = ['Rod', 'BB-8', 'Wall-E', 'Baymax'];
+  const prioridades = ['emergência', 'padrão', 'baixo risco'];
+  const componentesPossiveis = [
+    { nome: 'Sensor Óptico', tempo: 3 },
+    { nome: 'Placa Mãe', tempo: 5 },
+    { nome: 'Servo Motor', tempo: 2 },
+    { nome: 'Bateria', tempo: 4 },
+    { nome: 'Processador', tempo: 3 },
+    { nome: 'Braço Mecânico', tempo: 2 }
+  ];
+
+  // Quantidade de componentes entre 2 e 4
+  const qtdComponentes = Math.floor(Math.random() * 3) + 2;
+  const pilha = new PilhaComponentes();
+
+  for (let i = 0; i < qtdComponentes; i++) {
+    const comp = componentesPossiveis[Math.floor(Math.random() * componentesPossiveis.length)];
+    // Gera código aleatório de 4 letras/números
+    const codigo = Math.random().toString(36).substring(2, 6).toUpperCase();
+    pilha.push({
+      nome: comp.nome,
+      codigo: codigo,
+      tempoEstimado: comp.tempo
+    });
+  }
+
+  return new Robo(
+    nextRoboId++,
+    modelos[Math.floor(Math.random() * modelos.length)],
+    prioridades[Math.floor(Math.random() * prioridades.length)],
+    pilha
+  );
+}
 
 function setup() {
   const canvas = createCanvas(800, 600);
@@ -37,11 +76,9 @@ function draw() {
 
   tempoDecorrido = floor((millis() - startTime) / 1000);
 
+  atualizarTimerTopo(); // Atualiza o timer no topo
   desenharFila();
-
-  fill(0);
-  textSize(16);
-  text(`Tempo: ${tempoDecorrido}s`, 650, 30);
+  
 
   if (fila.size === 0 && isRunning) {
     victory();
@@ -51,6 +88,9 @@ function draw() {
 function iniciarJogo() {
   isRunning = true;
   startTime = millis();
+  robosConsertados = 0;
+  componentesConsertados = 0;
+  fila.enqueue(criarRoboAleatorio());
   generateInterval = setInterval(() => {
     if (!fila.enqueue(criarRoboAleatorio())) {
       gameOver();
@@ -68,7 +108,9 @@ function resetarJogo() {
   fila = new FilaRobos(MAX_ROBOS);
   selectedRobo = null;
   tempoDecorrido = 0;
-  atualizarPainel(); // limpa painel
+  robosConsertados = 0;
+  componentesConsertados = 0;
+  atualizarPainel();
   iniciarJogo();
   loop();
 }
@@ -102,12 +144,16 @@ function atualizarPainel() {
 Modelo: ${selectedRobo.modelo}
 Prioridade: ${selectedRobo.prioridade}`;
 
-    const top = selectedRobo.componentes.peek();
-    if (top) {
-      texto += `
-Componente: ${top.nome}
-Código: ${top.codigo}
-Tempo estimado: ${top.tempoEstimado}s`;
+    // Listar todos os componentes pendentes
+    let ptr = selectedRobo.componentes.top;
+    let idx = 1;
+    if (ptr) {
+      texto += `\nComponentes pendentes:`;
+      while (ptr) {
+        texto += `\n${idx}. ${ptr.data.nome} | Código: ${ptr.data.codigo} | Tempo: ${ptr.data.tempoEstimado}s`;
+        ptr = ptr.next;
+        idx++;
+      }
       inputBox.disabled = false;
       inputBox.focus();
     } else {
@@ -129,9 +175,11 @@ function verificarCodigo() {
 
   if (inputBox.value.trim() === top.codigo) {
     selectedRobo.componentes.pop();
+    componentesConsertados++; // Conta componente
 
     if (selectedRobo.componentes.isEmpty()) {
       removerRobo(selectedRobo);
+      robosConsertados++; // Conta robô
       selectedRobo = null;
     }
   }
@@ -158,13 +206,42 @@ function removerRobo(robo) {
 function gameOver() {
   pararJogo();
   noLoop();
+
+  // Pergunta nome do jogador ao perder
+  const nome = prompt('Game Over! Muitos robôs acumulados!\nSeu tempo: ' + tempoDecorrido + ' segundos.\nDigite seu nome para o ranking:');
+  if (nome) {
+    salvarRanking(nome, tempoDecorrido);
+  }
   alert('Game Over! Muitos robôs acumulados!');
 }
 
 function victory() {
   pararJogo();
   noLoop();
+
+  // Pergunta nome do jogador
+  const nome = prompt('Parabéns! Todos os robôs foram consertados em ' + tempoDecorrido + ' segundos!\nDigite seu nome para o ranking:');
+  if (nome) {
+    salvarRanking(nome, tempoDecorrido);
+  }
   alert(`Parabéns! Todos os robôs foram consertados em ${tempoDecorrido} segundos!`);
+}
+
+function salvarRanking(nome, tempo) {
+  let ranking = JSON.parse(localStorage.getItem('rankingRobos') || '[]');
+  ranking.push({
+    nome,
+    tempo,
+    robos: robosConsertados,
+    componentes: componentesConsertados
+  });
+  // Ordena: mais robôs, depois mais componentes, depois menor tempo
+  ranking.sort((a, b) => {
+    if (b.robos !== a.robos) return b.robos - a.robos;
+    if (b.componentes !== a.componentes) return b.componentes - a.componentes;
+    return a.tempo - b.tempo;
+  });
+  localStorage.setItem('rankingRobos', JSON.stringify(ranking));
 }
 
 function desenharFila() {
@@ -180,4 +257,11 @@ function desenharFila() {
     ptr = ptr.next;
     y += 50;
   }
+}
+
+function atualizarTimerTopo() {
+  const timerSpan = document.getElementById('timer');
+  const min = String(Math.floor(tempoDecorrido / 60)).padStart(2, '0');
+  const seg = String(tempoDecorrido % 60).padStart(2, '0');
+  timerSpan.textContent = `Tempo: ${min}:${seg}`;
 }

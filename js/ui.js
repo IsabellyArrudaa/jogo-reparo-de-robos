@@ -31,14 +31,12 @@ function closeComoJogarModal() {
 function renderRanking() {
   const lista = document.getElementById('lista-ranking');
   lista.innerHTML = '';
-  const exemplo = [
-    { nome: 'Alice', robos: 12, tempo: '02:34' },
-    { nome: 'Bruno', robos: 10, tempo: '03:10' },
-    { nome: 'Carla', robos: 8,  tempo: '04:05' }
-  ];
-  exemplo.forEach(item => {
+  let ranking = JSON.parse(localStorage.getItem('rankingRobos') || '[]');
+  ranking.forEach(item => {
+    const min = String(Math.floor(item.tempo / 60)).padStart(2, '0');
+    const seg = String(item.tempo % 60).padStart(2, '0');
     const li = document.createElement('li');
-    li.textContent = `${item.nome} — ${item.robos} robôs — ${item.tempo}`;
+    li.textContent = `${item.nome} - ${item.robos || 0} robôs - ${item.componentes || 0} componentes - ${min}:${seg}`;
     lista.appendChild(li);
   });
 }
