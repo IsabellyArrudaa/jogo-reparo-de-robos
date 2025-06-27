@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Jogo Reparo de Robôs</title>
+  <link rel="stylesheet" href="css/style.css"/>
+</head>
+<body>
+  <!-- TELA INICIAL -->
+  <div id="tela-inicial" class="tela">
+    <h1>Oficina Futurista</h1>
+    <button id="btn-jogar">Jogar</button>
+    <button id="btn-como-jogar">Como Jogar</button>
+    <button id="btn-ranking">Ranking</button>
+  </div>
+
+  <!-- TELA RANKING -->
+  <div id="tela-ranking" class="tela oculto">
+    <h2>Ranking</h2>
+    <ul id="lista-ranking"></ul>
+    <button class="btn-voltar">Voltar</button>
+  </div>
+
+  <!-- MODAL COMO JOGAR (único elemento para “Sobre”) -->
+  <div id="modal-como-jogar" class="modal oculto">
+    <div class="modal-conteudo">
+      <h2>Como Jogar</h2>
+      <p>
+        Você é um técnico que precisa consertar robôs. Cada robô tem uma pilha de componentes defeituosos.
+        Digite corretamente o código de cada componente para removê-lo da pilha. Quando a pilha acabar, o robô está consertado!
+      </p>
+      <!-- Aqui usamos onClick direto para evitar qualquer problema de carregamento -->
+      <button id="btn-fechar-modal" onclick="closeComoJogarModal()">Fechar</button>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.6.0/p5.min.js"></script>
+  <script src="js/structures.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/sketch.js"></script>
+</body>
+</html>
