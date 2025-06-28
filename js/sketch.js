@@ -22,13 +22,22 @@ function criarRoboAleatorio() {
     { nome: 'Braço Mecânico', tempo: 2 }
   ];
 
-  // Quantidade de componentes entre 2 e 4
-  const qtdComponentes = Math.floor(Math.random() * 3) + 2;
-  const pilha = new PilhaComponentes();
+  // Sorteia prioridade primeiro
+  const prioridade = prioridades[Math.floor(Math.random() * prioridades.length)];
 
+  // Define quantidade de componentes conforme prioridade
+  let qtdComponentes;
+  if (prioridade === 'emergência') {
+    qtdComponentes = Math.floor(Math.random() * 2) + 3; // 3 ou 4
+  } else if (prioridade === 'padrão') {
+    qtdComponentes = 2;
+  } else {
+    qtdComponentes = 1;
+  }
+
+  const pilha = new PilhaComponentes();
   for (let i = 0; i < qtdComponentes; i++) {
     const comp = componentesPossiveis[Math.floor(Math.random() * componentesPossiveis.length)];
-    // Gera código aleatório de 4 letras/números
     const codigo = Math.random().toString(36).substring(2, 6).toUpperCase();
     pilha.push({
       nome: comp.nome,
@@ -40,7 +49,7 @@ function criarRoboAleatorio() {
   return new Robo(
     nextRoboId++,
     modelos[Math.floor(Math.random() * modelos.length)],
-    prioridades[Math.floor(Math.random() * prioridades.length)],
+    prioridade,
     pilha
   );
 }
@@ -96,15 +105,34 @@ function iniciarJogo() {
       gameOver();
     }
   }, 5000);
+  const btnPause = document.getElementById('btn-pause');
+  if (btnPause) btnPause.textContent = 'Pausar';
 }
 
-function pararJogo() {
+function pauseGame() {
   clearInterval(generateInterval);
   isRunning = false;
+  noLoop();
+  document.getElementById('btn-pause').style.display = 'none';
+  document.getElementById('btn-continue').style.display = '';
 }
 
-function resetarJogo() {
-  pararJogo();
+function continuarJogo() {
+  isRunning = true;
+  // Ajusta o startTime para não contar o tempo pausado
+  startTime = millis() - tempoDecorrido * 1000;
+  generateInterval = setInterval(() => {
+    if (!fila.enqueue(criarRoboAleatorio())) {
+      gameOver();
+    }
+  }, 5000);
+  loop();
+  document.getElementById('btn-pause').style.display = '';
+  document.getElementById('btn-continue').style.display = 'none';
+}
+
+function resetGame() {
+  pauseGame();
   fila = new FilaRobos(MAX_ROBOS);
   selectedRobo = null;
   tempoDecorrido = 0;
@@ -113,6 +141,10 @@ function resetarJogo() {
   atualizarPainel();
   iniciarJogo();
   loop();
+
+  // Garante que o botão "Pausar" aparece e "Continuar" some
+  document.getElementById('btn-pause').style.display = '';
+  document.getElementById('btn-continue').style.display = 'none';
 }
 
 function mousePressed() {
@@ -204,7 +236,7 @@ function removerRobo(robo) {
 }
 
 function gameOver() {
-  pararJogo();
+  pauseGame();
   noLoop();
 
   // Pergunta nome do jogador ao perder
@@ -216,7 +248,7 @@ function gameOver() {
 }
 
 function victory() {
-  pararJogo();
+  pauseGame();
   noLoop();
 
   // Pergunta nome do jogador
@@ -265,3 +297,6 @@ function atualizarTimerTopo() {
   const seg = String(tempoDecorrido % 60).padStart(2, '0');
   timerSpan.textContent = `Tempo: ${min}:${seg}`;
 }
+
+window.pauseGame = pauseGame;
+window.resetGame = resetGame;

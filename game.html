@@ -9,8 +9,8 @@
 <body>
   <!-- Controles principais -->
   <div id="game-controls">
-    <button id="btn-init">Iniciar</button>
     <button id="btn-pause">Pausar</button>
+    <button id="btn-continue" style="display:none;">Continuar</button>
     <button id="btn-reset">Reset</button>
     <span id="timer">Tempo: 00:00</span>
     <!-- Permite voltar ao menu principal -->
@@ -25,7 +25,7 @@
 
     <div id="painel-lateral">
       <h2>Detalhes do Robô</h2>
-      <p id="detalhes-robo">Selecione um robô à esquerda</p>
+      <p id="detalhes-robo">Selecione um robô à Direita</p>
       <input id="input-box" type="text" placeholder="Digite o código do componente" />
     </div>
   </div>
@@ -35,17 +35,14 @@
   <script src="js/structures.js"></script>
   <script src="js/sketch.js"></script>
   <script>
-    // Atrela os botões de controle à lógica de sketch.js
-    window.addEventListener('DOMContentLoaded', () => {
-      document.getElementById('btn-init')
-        .addEventListener('click', () => { if (typeof resumeGame === 'function') resumeGame(); });
-      document.getElementById('btn-pause')
-        .addEventListener('click', () => { if (typeof pauseGame === 'function') pauseGame(); });
-      document.getElementById('btn-reset')
-        .addEventListener('click', () => { if (typeof resetGame === 'function') resetGame(); });
-      document.getElementById('btn-voltar-menu')
-        .addEventListener('click', () => { window.location.href = 'index.html'; });
-    });
+  document.getElementById('btn-pause')
+    .onclick = pauseGame;
+  document.getElementById('btn-reset')
+    .onclick = resetGame;
+  document.getElementById('btn-voltar-menu')
+    .onclick = () => { window.location.href = 'index.html'; };
+  document.getElementById('btn-continue').onclick = continuarJogo;
+</script>
   </script>
 </body>
 </html>
